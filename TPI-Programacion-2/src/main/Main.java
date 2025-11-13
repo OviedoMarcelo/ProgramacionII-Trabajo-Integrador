@@ -1,7 +1,7 @@
 package main;
 
 import dao.GenericDAO;
-import dao.PedidoDAOImpl;
+import dao.PedidoDAO;
 import entities.Producto;
 import service.GenericService;
 import service.ProductoServiceImpl;
@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
 
         // 1️⃣ Instanciamos la implementación del DAO que maneja el acceso a la base de datos
-        GenericDAO<Producto> productoDAO = new PedidoDAOImpl();
+        GenericDAO<Producto> productoDAO = new PedidoDAO();
 
         // 2️⃣ Creamos el servicio de producto, inyectando la dependencia del DAO
         GenericService<Producto> productoService = new ProductoServiceImpl(productoDAO);
