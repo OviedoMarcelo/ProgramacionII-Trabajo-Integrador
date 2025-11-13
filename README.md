@@ -92,14 +92,14 @@ gradlew.bat clean build
 
 Por defecto conecta a:
 - **Host**: localhost:3306
-- **Base de datos**: dbtpi3
+- **Base de datos**: sistemadeenvios
 - **Usuario**: root
 - **Contraseña**: (vacía)
 
 Para cambiar la configuración, usar propiedades del sistema:
 
 ```bash
-java -Ddb.url=jdbc:mysql://localhost:3306/dbtpi3 \
+java -Ddb.url=jdbc:mysql://localhost:3306/sistemadeenvios \
      -Ddb.user=usuario \
      -Ddb.password=clave \
      -cp ...
@@ -142,8 +142,8 @@ Salida esperada:
 ```
 Conexion exitosa a la base de datos
 Usuario conectado: root@localhost
-Base de datos: dbtpi3
-URL: jdbc:mysql://localhost:3306/dbtpi3
+Base de datos: sistemadeenvios
+URL: jdbc:mysql://localhost:3306/sistemadeenvios
 Driver: MySQL Connector/J v8.4.0
 ```
 
@@ -301,7 +301,7 @@ net start MySQL80
 
 **Solución**: Verificar usuario/contraseña en DatabaseConnection.java o usar -Ddb.user y -Ddb.password
 
-### Error: "Unknown database 'dbtpi3'"
+### Error: "Unknown database 'sistemadeenvios'"
 **Causa**: Base de datos no creada
 
 **Solución**: Ejecutar script de creación de base de datos (ver sección Instalación)
