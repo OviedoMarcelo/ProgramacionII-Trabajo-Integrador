@@ -7,6 +7,9 @@ import java.util.*;
 
 public class PedidoDAO implements GenericDAO<Pedido> {
 
+    public PedidoDAO() {
+    }
+
     @Override
     public void save(Pedido entity) throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
