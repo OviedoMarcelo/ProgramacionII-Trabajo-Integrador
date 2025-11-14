@@ -2,91 +2,42 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package entities;
 
-
 /**
- * Clase base abstracta para todas las entidades del sistema.
- * Implementa el patrón de soft delete mediante el campo 'eliminado'.
  *
- * Propósito:
- * - Proporcionar campos comunes a todas las entidades (id, eliminado)
- * - Implementar el patrón de herencia para evitar duplicación de código
- * - Soportar eliminación lógica en lugar de eliminación física
- *
- * Patrón de diseño: Template (clase base abstracta)
+ * @author gonza
  */
-public abstract class Base {
-    /**
-     * Identificador único de la entidad.
-     * Generado automáticamente por la base de datos (AUTO_INCREMENT).
-     */
-    private int id;
+public abstract class Base <T> {
+    protected T id;
+    protected boolean eliminado;
 
-    /**
-     * Flag de eliminación lógica.
-     * - true: La entidad está marcada como eliminada (no se mostrará en consultas)
-     * - false: La entidad está activa
-     *
-     * Esto permite mantener integridad referencial y datos históricos.
-     */
-    private boolean deleted;
+    public Base() {
+        this.eliminado = false; // por defecto NO eliminado
+    }
 
-    /**
-     * Constructor completo con todos los campos.
-     * Usado por los DAOs al reconstruir entidades desde la base de datos.
-     *
-     * @param id Identificador de la entidad
-     * @param eliminado Estado de eliminación
-     */
-    protected Base(int id, boolean eliminado) {
+    public Base(T id) {
         this.id = id;
-        this.deleted = eliminado;
+        this.eliminado = false;
     }
 
-    /**
-     * Constructor por defecto.
-     * Inicializa una entidad nueva sin ID (será asignado por la BD).
-     * Por defecto, las entidades nuevas NO están eliminadas.
-     */
-    protected Base() {
-        this.deleted = false;
-    }
-
-    /**
-     * Obtiene el ID de la entidad.
-     * @return ID de la entidad, 0 si aún no ha sido persistida
-     */
-    public int getId() {
+    public T getId() {
         return id;
     }
 
-    /**
-     * Establece el ID de la entidad.
-     * Típicamente llamado por el DAO después de insertar en la BD.
-     *
-     * @param id Nuevo ID de la entidad
-     */
-    public void setId(int id) {
+    public void setId(T id) {
         this.id = id;
     }
 
-    /**
-     * Verifica si la entidad está marcada como eliminada.
-     * @return true si está eliminada, false si está activa
-     */
     public boolean isEliminado() {
-        return deleted;
+        return eliminado;
     }
 
-    /**
-     * Marca o desmarca la entidad como eliminada.
-     * En el contexto del soft delete, esto se usa para "eliminar" sin borrar físicamente.
-     *
-     * @param eliminado true para marcar como eliminada, false para reactivar
-     */
     public void setEliminado(boolean eliminado) {
-        this.deleted = eliminado;
+        this.eliminado = eliminado;
     }
+    
+    
+    
+    
 }

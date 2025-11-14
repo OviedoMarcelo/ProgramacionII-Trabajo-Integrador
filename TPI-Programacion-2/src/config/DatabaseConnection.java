@@ -7,9 +7,9 @@ import java.sql.SQLException;
 public class DatabaseConnection {
 
     // Datos de conexión - Se configuran directamente en el código
-    private static final String URL = "jdbc:mysql://localhost:3306/sistemadeenvios";
+    private static final String URL = "jdbc:mysql://localhost:3306/trabajo_integrador";
     private static final String USER = "root";
-    private static final String PASSWORD = "Rubita1501!";
+    private static final String PASSWORD = "gemmanuel196";
 
     static {
         try {
@@ -23,7 +23,6 @@ public class DatabaseConnection {
 
     /**
      * 🔹 Método para obtener una conexión a la base de datos.
-     *
      * @return Connection si la conexión es exitosa.
      * @throws SQLException Si hay un problema al conectarse.
      */
