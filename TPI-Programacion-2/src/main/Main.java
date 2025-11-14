@@ -1,44 +1,20 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+ */
 package main;
 
-import dao.GenericDAO;
-import dao.PedidoDAO;
-import entities.Pedido;
-import service.GenericService;
-import service.ProductoServiceImpl;
+/**
+ *
+ * @author gonza
+ */
+public class main {
 
-public class Main {
-
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
-
-        // 1️⃣ Instanciamos la implementación del DAO que maneja el acceso a la base de datos
-        GenericDAO<Pedido> pedidoDAO = new PedidoDAO();
-
-        // 2️⃣ Creamos el servicio de producto, inyectando la dependencia del DAO
-        GenericService<Pedido> productoService = new PedidoServiceImpl(pedidoDAO);
-
-        try {
-            // 3️⃣ Creamos un nuevo objeto Producto (sin ID porque aún no está en la base)
-            Pedido nuevo = new Pedido(
-                    "Notebook i7", // nombre
-                    "Notebook Lenovo i7", // descripción
-                    900000.0, // precio
-                    100 // cantidad
-            );
-
-            // 4️⃣ Delegamos el trabajo de guardar el producto
-            productoService.save(nuevo);
-
-            System.out.println("✅ Producto guardado exitosamente.");
-
-            // 5️⃣ Listamos todos los productos para verificar que se haya insertado correctamente
-            System.out.println("📦 Listado de productos:");
-            for (Producto p : productoService.findAll()) {
-                System.out.println("🔹 " + p);
-            }
-
-        } catch (Exception e) {
-            // 6️⃣ En caso de error (validación, conexión, SQL...), lo mostramos por consola
-            System.err.println("❌ Error al guardar o recuperar productos: " + e.getMessage());
-        }
+        // TODO code application logic here
     }
+    
 }
