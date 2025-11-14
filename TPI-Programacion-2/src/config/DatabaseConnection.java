@@ -23,7 +23,6 @@ public class DatabaseConnection {
 
     /**
      * 🔹 Método para obtener una conexión a la base de datos.
-     *
      * @return Connection si la conexión es exitosa.
      * @throws SQLException Si hay un problema al conectarse.
      */

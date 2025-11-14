@@ -34,11 +34,11 @@ public class Main {
             System.out.println("📦 Listado de productos:");
             for (Producto p : productoService.findAll()) {
                 System.out.println("🔹 " + p);
-            }
-
+    }
+    
         } catch (Exception e) {
             // 6️⃣ En caso de error (validación, conexión, SQL...), lo mostramos por consola
             System.err.println("❌ Error al guardar o recuperar productos: " + e.getMessage());
-        }
+}
     }
 }
