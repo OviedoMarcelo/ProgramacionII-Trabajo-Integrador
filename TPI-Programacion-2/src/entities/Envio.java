@@ -11,10 +11,13 @@ import java.time.LocalDate;
  * @author gonza
  */
 public class Envio extends Base <Long> {
+
+
+   
  
     private String tracking;
-    private EmpresaDeEnvio empresa;
-    private TipoDeEnvio tipo;
+    private EmpresaDeEnvio empresaEnvio;
+    private TipoDeEnvio tipoEnvio;
     private double costo;
     private LocalDate fechaDespacho;
     private LocalDate fechaEstimada;
@@ -27,8 +30,8 @@ public class Envio extends Base <Long> {
     public Envio(Long id ,String tracking, EmpresaDeEnvio empresa, TipoDeEnvio tipo, double costo, LocalDate fechaDespacho, LocalDate fechaEstimada, EstadoDeEnvio estado) {
         super(id);
         this.tracking = tracking;
-        this.empresa = empresa;
-        this.tipo = tipo;
+        this.empresaEnvio = empresa;
+        this.tipoEnvio = tipo;
         this.costo = costo;
         this.fechaDespacho = fechaDespacho;
         this.fechaEstimada = fechaEstimada;
@@ -45,19 +48,19 @@ public class Envio extends Base <Long> {
     }
 
     public EmpresaDeEnvio getEmpresa() {
-        return empresa;
+        return empresaEnvio;
     }
 
     public void setEmpresa(EmpresaDeEnvio empresa) {
-        this.empresa = empresa;
+        this.empresaEnvio = empresa;
     }
 
     public TipoDeEnvio getTipo() {
-        return tipo;
+        return tipoEnvio;
     }
 
     public void setTipo(TipoDeEnvio tipo) {
-        this.tipo = tipo;
+        this.tipoEnvio = tipo;
     }
 
     public double getCosto() {
@@ -97,8 +100,8 @@ public class Envio extends Base <Long> {
          return  "----- ENVÍO -----\n" +
             "ID:              " + id + "\n" +
             "Tracking:        " + tracking + "\n" +
-            "Empresa:         " + empresa + "\n" +
-            "Tipo:            " + tipo + "\n" +
+            "Empresa:         " + empresaEnvio + "\n" +
+            "Tipo:            " + tipoEnvio + "\n" +
             "Costo:           " + costo + "\n" +
             "Fecha despacho:  " + fechaDespacho + "\n" +
             "Fecha estimada:  " + fechaEstimada + "\n" +
