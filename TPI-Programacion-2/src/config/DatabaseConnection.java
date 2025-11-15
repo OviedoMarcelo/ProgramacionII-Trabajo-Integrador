@@ -7,9 +7,9 @@ import java.sql.SQLException;
 public class DatabaseConnection {
 
     // Datos de conexión - Se configuran directamente en el código
-    private static final String URL = "jdbc:mysql://localhost:3306/trabajo_integrador";
+    private static final String URL = "jdbc:mysql://localhost:3306/trabajo_final";
     private static final String USER = "root";
-    private static final String PASSWORD = "gemmanuel196";
+    private static final String PASSWORD = "1234";
 
     static {
         try {

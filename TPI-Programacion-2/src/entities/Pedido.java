@@ -10,25 +10,42 @@ import java.time.LocalDate;
  *
  * @author gonza
  */
-public class Pedido extends Base<Long>{
+public class Pedido extends Base<Integer>{
     
     private String numero;
     private LocalDate fecha;
     private String clienteNombre;
     private EstadoDePedido estado;
+    private double total;
     private Envio envio;
 
-    public Pedido(Long id ,String numero, LocalDate fecha, String clienteNombre, EstadoDePedido estado, Envio envio) {
+    public Pedido() {
+    }
+    
+    //Constructor completo (para lectura desde la base de datos)
+
+    public Pedido(int id ,String numero, LocalDate fecha, String clienteNombre, EstadoDePedido estado, double total, Envio envio) {
         super(id);
         this.numero = numero;
         this.fecha = fecha;
         this.clienteNombre = clienteNombre;
         this.estado = estado;
+        this.total = total;
+        this.envio = envio;
+
+    }
+    //Constructor sin ID (para nuevos productos)
+    public Pedido(String numero, LocalDate fecha, String clienteNombre, EstadoDePedido estado, double total, Envio envio) {
+        this.numero = numero;
+        this.fecha = fecha;
+        this.clienteNombre = clienteNombre;
+        this.estado = estado;
+        this.total = total;
         this.envio = envio;
     }
-
     
     //Getters & Setters
+
     public String getNumero() {
         return numero;
     }
@@ -61,6 +78,14 @@ public class Pedido extends Base<Long>{
         this.estado = estado;
     }
 
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
     public Envio getEnvio() {
         return envio;
     }
@@ -68,22 +93,35 @@ public class Pedido extends Base<Long>{
     public void setEnvio(Envio envio) {
         this.envio = envio;
     }
-    
-    //Metodos
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public boolean isEliminado() {
+        return eliminado;
+    }
+
+    public void setEliminado(boolean eliminado) {
+        this.eliminado = eliminado;
+    }
     
-    
+   
+    //Metodos
     @Override
     public String toString() {
         return  "----- PEDIDO -----\n" +
-            "ID:              " + id + "\n" +
-            "Eliminado:       " + eliminado + "\n" +
-            "Número:          " + numero + "\n" +
-            "Fecha:           " + fecha + "\n" +
-            "Cliente:         " + clienteNombre + "\n" +
-            "Estado:          " + estado + "\n" +
-            "Envio:           " + envio + "\n";
-        
+                "ID:              " + id + "\n" +
+                "Eliminado:       " + eliminado + "\n" +
+                "Número:          " + numero + "\n" +
+                "Fecha:           " + fecha + "\n" +
+                "Cliente:         " + clienteNombre + "\n" +
+                "Estado:          " + estado + "\n" +
+                "Envio:           " + envio + "\n";
     }
     
    
