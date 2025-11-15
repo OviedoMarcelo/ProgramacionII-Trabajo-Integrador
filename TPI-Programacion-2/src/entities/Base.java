@@ -7,6 +7,7 @@ package entities;
 /**
  *
  * @author gonza
+ * @param <T>
  */
 public abstract class Base <T> {
     protected T id;

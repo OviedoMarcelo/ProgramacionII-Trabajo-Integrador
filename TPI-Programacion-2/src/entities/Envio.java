@@ -10,7 +10,7 @@ import java.time.LocalDate;
  *
  * @author gonza
  */
-public class Envio extends Base <Long> {
+public class Envio extends Base <Integer> {
  
     private String tracking;
     private EmpresaDeEnvio empresa;
@@ -24,7 +24,7 @@ public class Envio extends Base <Long> {
     public Envio() {
     }
     
-    public Envio(Long id ,String tracking, EmpresaDeEnvio empresa, TipoDeEnvio tipo, double costo, LocalDate fechaDespacho, LocalDate fechaEstimada, EstadoDeEnvio estado) {
+    public Envio(int id ,String tracking, EmpresaDeEnvio empresa, TipoDeEnvio tipo, double costo, LocalDate fechaDespacho, LocalDate fechaEstimada, EstadoDeEnvio estado) {
         super(id);
         this.tracking = tracking;
         this.empresa = empresa;
@@ -33,6 +33,11 @@ public class Envio extends Base <Long> {
         this.fechaDespacho = fechaDespacho;
         this.fechaEstimada = fechaEstimada;
         this.estado = estado;
+    }
+
+    @Override
+    public Integer getId() {
+        return id;
     }
 
     //Getters & Setters
