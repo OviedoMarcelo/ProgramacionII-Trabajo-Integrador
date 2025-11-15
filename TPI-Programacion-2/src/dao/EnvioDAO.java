@@ -65,7 +65,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
      * @throws Exception si ocurre un error de conexión o de ejecución de la sentencia
      */
     @Override
-    public void save(Envio envio) throws Exception {
+    public void save(Envio envio) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -86,7 +86,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
      * @throws Exception si ocurre un error al preparar o ejecutar la sentencia
      */
     @Override
-    public void saveTx(Envio envio, Connection conn) throws Exception {
+    public void saveTx(Envio envio, Connection conn) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
             setEnvioValues(stmt, envio);
             stmt.executeUpdate();
@@ -102,7 +102,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
      * @throws Exception si no se encuentra el envío o si ocurre un error SQL
      */
     @Override
-    public void update(Envio envio) throws Exception {
+    public void update(Envio envio) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(UPDATE_SQL)) {
 
@@ -129,7 +129,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
      * @throws Exception si no se encuentra el envío o si ocurre un error SQL
      */
     @Override
-    public void delete(int id) throws Exception {
+    public void delete(int id) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
 
@@ -150,7 +150,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
      * @throws Exception si ocurre un error de conexión o de ejecución de la consulta
      */
     @Override
-    public Envio findById(int id) throws Exception {
+    public Envio findById(int id) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID_SQL)) {
 
@@ -172,7 +172,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
      * @throws Exception si ocurre un error al acceder a la base de datos
      */
     @Override
-    public List<Envio> findAll() throws Exception {
+    public List<Envio> findAll() throws SQLException {
         List<Envio> envios = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getConnection();
