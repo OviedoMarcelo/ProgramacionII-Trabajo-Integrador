@@ -16,7 +16,10 @@ public class EnvioDAO implements GenericDAO<Envio> {
     
     @Override
     public void save(Envio envio) throws SQLException {
-        throw new UnsupportedOperationException("Usar saveTx con Connection para transacciones");
+        //throw new UnsupportedOperationException("Usar saveTx con Connection para transacciones");
+            try (Connection connection = config.DatabaseConnection.getConnection();) {
+        saveTx(envio, connection);
+    }
     }
 
     @Override

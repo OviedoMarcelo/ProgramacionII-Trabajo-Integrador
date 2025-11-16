@@ -71,12 +71,39 @@ El sistema permite gestionar dos entidades principales con las siguientes operac
 
 ### 1. Configurar Base de Datos
 
-Ejecutar el siguiente script SQL en MySQL (Pendiente):
+Ejecutar los siguientes scripts SQL en MySQL:
 
 ```sql
-CREATE DATABASE IF NOT EXISTS 
+CREATE DATABASE IF NOT EXISTS pedidoenviotpi; 
+
+CREATE TABLE envios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    eliminado BOOLEAN DEFAULT FALSE NOT NULL,
+    tracking VARCHAR(100) NOT NULL UNIQUE,
+    empresa ENUM('ANDREANI', 'OCA', 'CORREO_ARGENTINO') NOT NULL,
+    tipo ENUM('ESTANDAR', 'EXPRESS') NOT NULL,
+    costo DOUBLE(10, 2) NOT NULL CHECK (costo > 0),
+    fecha_despacho DATE NULL,
+    fecha_estimada DATE NULL,
+    estado ENUM('EN_PREPARACION', 'EN_TRANSITO', 'ENTREGADO') NOT NULL DEFAULT 'EN_PREPARACION'
+);
+
+CREATE TABLE pedidos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    eliminado BOOLEAN DEFAULT FALSE NOT NULL,
+    numero VARCHAR(50) NOT NULL,
+    fecha DATE NOT NULL,
+    clienteNombre VARCHAR(100) NOT NULL,
+    total DOUBLE(10 , 2 ) NOT NULL CHECK (total > 0),
+    estado ENUM('NUEVO', 'FACTURADO', 'ENVIADO') NOT NULL,
+    envio INT NOT NULL,
+    FOREIGN KEY (envio)
+        REFERENCES envios (id)
 );
 ```
+1. Copia `database.properties.example` a `database.properties`
+2. Configura tus credenciales reales
+3. `database.properties` está en .gitignore por seguridad
 
 ### 2. Compilar el Proyecto
 

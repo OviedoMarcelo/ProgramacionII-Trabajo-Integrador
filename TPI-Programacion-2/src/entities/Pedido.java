@@ -30,7 +30,9 @@ public class Pedido extends Base<Long> {
     }
 
     public Pedido() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Constructor vacío necesario para crear instancias antes de asignar valores
+        this.fecha = LocalDate.now(); // Fecha actual por defecto
+        this.estado = EstadoDePedido.NUEVO; // Estado por defecto
     }
 
     //Getters & Setters

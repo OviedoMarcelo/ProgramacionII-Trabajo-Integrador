@@ -1,0 +1,5 @@
+# Configuración de la base de datos - EJEMPLO
+# Copia este archivo como database.properties y completa con tus datos reales
+db.url=jdbc:mysql://localhost:3306/tu_base_de_datos
+db.user=tu_usuario
+db.password=tu_contraseña

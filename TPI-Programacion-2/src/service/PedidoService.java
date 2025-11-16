@@ -291,4 +291,12 @@ public class PedidoService implements GenericService<Pedido> {
     public double calcularValorTotalPedidos() throws Exception {
         return pedidoDAO.sumarTotalActivos();
     }
+    
+    public void actualizarPedido(Pedido pedido) {
+    try {
+        pedidoDAO.update(pedido);
+    } catch (SQLException e) {
+        System.out.println("Error al actualizar pedido: " + e.getMessage());
+    }
+}
 }
