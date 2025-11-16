@@ -242,20 +242,19 @@ public class PedidoService implements GenericService<Pedido> {
     }
 
     /**
-     * Elimina lógicamente un pedido según su número (no por ID).
+     * Elimina lógicamente un pedido según su ID.
      *
-     * @param numero número del pedido
+     * @param numero id del pedido
      * @throws Exception si el pedido no existe
      */
-    public void eliminarPedido(String numero) throws Exception {
-        Pedido pedido = pedidoDAO.findByNumero(numero);
+    public void eliminarPedido(int numero) throws Exception {
+        Pedido pedido = pedidoDAO.findById(numero);
 
         if (pedido == null) {
             throw new Exception("Pedido no encontrado.");
         }
 
-        pedido.setEliminado(true);
-        pedidoDAO.update(pedido);
+        pedidoDAO.delete(numero);
     }
 
     /**
