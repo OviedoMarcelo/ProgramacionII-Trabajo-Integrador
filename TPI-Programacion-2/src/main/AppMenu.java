@@ -159,7 +159,7 @@ public class AppMenu {
      */
     private PedidoService crearServicios() {
         EnvioDAO envioDAO = new EnvioDAO();
-        PedidoDAO pedidoDAO = new PedidoDAO(envioDAO);
+        PedidoDAO pedidoDAO = new PedidoDAO();
         EnvioService envioService = new EnvioService(envioDAO);
         return new PedidoService(pedidoDAO, envioService);
     }

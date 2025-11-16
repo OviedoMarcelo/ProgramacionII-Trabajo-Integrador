@@ -90,7 +90,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
             // Obtener el ID generado
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    envio.setId(generatedKeys.getInt(1));
+                    envio.setId(generatedKeys.getLong(1));
                 }
             }
         }
@@ -173,7 +173,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
     // Método auxiliar para mapear ResultSet a objeto Envio
     private Envio mapearEnvio(ResultSet resultSet) throws SQLException {
         Envio envio = new Envio();
-        envio.setId(resultSet.getInt("id"));
+        envio.setId(resultSet.getLong("id"));
         envio.setTracking(resultSet.getString("tracking"));
         envio.setEmpresa(EmpresaDeEnvio.valueOf(resultSet.getString("empresa")));
         envio.setTipo(TipoDeEnvio.valueOf(resultSet.getString("tipo")));

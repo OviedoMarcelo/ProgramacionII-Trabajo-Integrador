@@ -15,23 +15,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PedidoDAO implements GenericDAO<Pedido> {
-  /** SQL para insertar un nuevo pedido. */
+
+    /**
+     * SQL para insertar un nuevo pedido.
+     */
     private static final String INSERT_SQL
             = "INSERT INTO pedidos (numero,fecha,clienteNombre,total,estado,envio) VALUES (?,?,?,?,?,?)";
 
-    /** SQL para actualizar un pedido existente. */
+    /**
+     * SQL para actualizar un pedido existente.
+     */
     private static final String UPDATE_SQL
             = "UPDATE pedidos SET numero=?, fecha=?, clienteNombre=?, total=?, estado=?, envio=? WHERE id=?";
 
-    /** SQL para eliminación lógica de un pedido. */
+    /**
+     * SQL para eliminación lógica de un pedido.
+     */
     private static final String DELETE_SQL
             = "UPDATE pedidos SET eliminado = TRUE WHERE id = ?";
 
-    /** SQL para búsqueda por ID. */
+    /**
+     * SQL para búsqueda por ID.
+     */
     private static final String SELECT_BY_ID_SQL
             = "SELECT * FROM pedidos WHERE id = ? AND eliminado = FALSE";
 
-    /** SQL para obtener todos los pedidos activos. */
+    /**
+     * SQL para obtener todos los pedidos activos.
+     */
     private static final String SELECT_ALL_SQL
             = "SELECT * FROM pedidos WHERE eliminado = FALSE";
 
@@ -40,8 +51,11 @@ public class PedidoDAO implements GenericDAO<Pedido> {
      */
     public PedidoDAO() {
     }
-    
-    
+/*
+    public PedidoDAO(EnvioDAO envioDAO) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+*/
     /**
      * Guarda un pedido en la base de datos y asigna su ID generado.
      *
@@ -50,8 +64,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
      */
     @Override
     public void save(Pedido pedido) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             setPedidoValues(stmt, pedido);
             stmt.executeUpdate();
@@ -85,8 +98,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
      */
     @Override
     public Pedido findById(int id) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID_SQL)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID_SQL)) {
 
             stmt.setInt(1, id);
 
@@ -109,9 +121,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
     public List<Pedido> findAll() throws SQLException {
         List<Pedido> pedidos = new ArrayList<>();
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SQL);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SQL); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 pedidos.add(mapResultSetToPedido(rs));
@@ -129,16 +139,15 @@ public class PedidoDAO implements GenericDAO<Pedido> {
      */
     @Override
     public void update(Pedido pedido) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(UPDATE_SQL)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(UPDATE_SQL)) {
 
             stmt.setString(1, pedido.getNumero());
             stmt.setDate(2, java.sql.Date.valueOf(pedido.getFecha()));
             stmt.setString(3, pedido.getClienteNombre());
             stmt.setDouble(4, pedido.getTotal());
             stmt.setString(5, pedido.getEstado().name());
-            stmt.setInt(6, pedido.getEnvio().getId());
-            stmt.setInt(7, pedido.getId());
+            stmt.setLong(6, pedido.getEnvio().getId());
+            stmt.setLong(7, pedido.getId());
 
             int rowsAffected = stmt.executeUpdate();
 
@@ -156,8 +165,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
      */
     @Override
     public void delete(int id) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
 
             stmt.setInt(1, id);
 
@@ -168,8 +176,8 @@ public class PedidoDAO implements GenericDAO<Pedido> {
             }
         }
     }
-    
-     /**
+
+    /**
      * Busca un pedido por su número identificador único.
      *
      * @param numero número del pedido
@@ -179,8 +187,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
     public Pedido findByNumero(String numero) throws SQLException {
         String sql = "SELECT * FROM pedidos WHERE numero = ? AND eliminado = FALSE";
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, numero);
 
@@ -205,8 +212,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
 
         String sql = "SELECT * FROM pedidos WHERE clienteNombre = ? AND eliminado = FALSE";
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, cliente);
 
@@ -228,9 +234,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
     public long contarActivos() throws SQLException {
         String sql = "SELECT COUNT(*) FROM pedidos WHERE eliminado = FALSE";
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 return rs.getLong(1);
@@ -248,9 +252,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
     public double sumarTotalActivos() throws SQLException {
         String sql = "SELECT SUM(total) FROM pedidos WHERE eliminado = FALSE";
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 return rs.getDouble(1);
@@ -258,13 +260,10 @@ public class PedidoDAO implements GenericDAO<Pedido> {
         }
         return 0;
     }
-    
-    
 
     // =========================================================================
     // MÉTODOS AUXILIARES
     // =========================================================================
-
     /**
      * Asigna los valores del pedido al PreparedStatement en el orden correcto.
      *
@@ -278,7 +277,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
         stmt.setString(3, pedido.getClienteNombre());
         stmt.setDouble(4, pedido.getTotal());
         stmt.setString(5, pedido.getEstado().name());
-        stmt.setInt(6, pedido.getEnvio().getId());
+        stmt.setLong(6, pedido.getEnvio().getId());
     }
 
     /**
@@ -291,7 +290,7 @@ public class PedidoDAO implements GenericDAO<Pedido> {
     private void setGeneratedId(PreparedStatement stmt, Pedido pedido) throws SQLException {
         try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
             if (generatedKeys.next()) {
-                pedido.setId(generatedKeys.getInt(1));
+                pedido.setId(generatedKeys.getLong(1));
             } else {
                 throw new SQLException("La inserción del pedido falló, no se obtuvo ID generado.");
             }
@@ -306,26 +305,26 @@ public class PedidoDAO implements GenericDAO<Pedido> {
      * @throws SQLException si ocurre un error al leer los datos
      */
     private Pedido mapResultSetToPedido(ResultSet rs) throws SQLException {
-        
-    // Como la columna envio es NOT NULL, siempre debe haber un ID válido
-    int envioId = rs.getInt("envio");
-    Envio envio = new EnvioDAO().findById(envioId);
 
-    // Por seguridad, por si la BD se desincroniza y no existe ese envio
-    if (envio == null) {
-        throw new SQLException("No se encontró un Envío con id = " + envioId 
-                + " para el pedido id = " + rs.getInt("id"));
-    }
+        // Como la columna envio es NOT NULL, siempre debe haber un ID válido
+        int envioId = rs.getInt("envio");
+        Envio envio = new EnvioDAO().findById(envioId);
 
-    return new Pedido(
-            rs.getInt("id"),
-            rs.getString("numero"),
-            rs.getDate("fecha").toLocalDate(),
-            rs.getString("clienteNombre"),
-            EstadoDePedido.valueOf(rs.getString("estado")),
-            rs.getDouble("total"),
-            envio
-    );
-    
+        // Por seguridad, por si la BD se desincroniza y no existe ese envio
+        if (envio == null) {
+            throw new SQLException("No se encontró un Envío con id = " + envioId
+                    + " para el pedido id = " + rs.getInt("id"));
+        }
+
+        return new Pedido(
+                rs.getLong("id"),
+                rs.getString("numero"),
+                rs.getDate("fecha").toLocalDate(),
+                rs.getString("clienteNombre"),
+                EstadoDePedido.valueOf(rs.getString("estado")),
+                envio,
+                rs.getDouble("total")
+        );
+
     }
 }
