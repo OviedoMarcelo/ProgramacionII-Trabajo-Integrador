@@ -1,5 +1,8 @@
 package main;
 
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Punto de entrada principal de la aplicación de gestión Pedido-Envío.
  *
@@ -20,6 +23,7 @@ public class Main {
      * aplicación)
      */
     public static void main(String[] args) {
+        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
         AppMenu app = new AppMenu();
         app.ejecutar();
     }

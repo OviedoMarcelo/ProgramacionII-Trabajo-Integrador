@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 import service.PedidoService;
 
 /**
@@ -45,10 +46,6 @@ public class MenuHandler {
             System.out.print("Total del pedido: ");
             double total = Double.parseDouble(scanner.nextLine());
 
-            // Datos del envío
-            System.out.print("Número de tracking: ");
-            String tracking = scanner.nextLine().toUpperCase();
-
             System.out.println("Empresas disponibles: " + Arrays.toString(EmpresaDeEnvio.values()));
             System.out.print("Empresa de envío: ");
             String empresa = scanner.nextLine().toUpperCase();
@@ -67,7 +64,11 @@ public class MenuHandler {
             pedido.setTotal(total);
 
             Envio envio = new Envio();
+            
+            // generamos uuid para tracking:
+            String tracking = UUID.randomUUID().toString();
             envio.setTracking(tracking);
+            
             envio.setEmpresa(EmpresaDeEnvio.valueOf(empresa));
             envio.setTipo(TipoDeEnvio.valueOf(tipo));
             envio.setCosto(costo);
@@ -164,8 +165,8 @@ public class MenuHandler {
 
     public void eliminarPedido() {
         try {
-            System.out.print("\nIngrese número de pedido a eliminar: ");
-            String numero = scanner.nextLine().toUpperCase();
+            System.out.print("\nIngrese el id del pedido a eliminar: ");
+            int numero = scanner.nextInt();
 
             System.out.print("¿Está seguro? (S/N): ");
             String confirmacion = scanner.nextLine().toUpperCase();
