@@ -1,6 +1,6 @@
-
 package service;
 
+import config.DatabaseConnection;
 import config.TransactionManager;
 import dao.EnvioDAO;
 import dao.PedidoDAO;
@@ -9,6 +9,7 @@ import entities.Envio;
 import entities.EstadoDeEnvio;
 import entities.Pedido;
 import java.util.List;
+import java.sql.SQLException;
 
 /**
  * Servicio encargado de gestionar los pedidos y sus envíos asociados.
@@ -21,22 +22,26 @@ import java.util.List;
  * @author gonza
  */
 public class PedidoService implements GenericService<Pedido> {
-    
-    /** DAO para operaciones de acceso a datos de pedidos. */
+
+    /**
+     * DAO para operaciones de acceso a datos de pedidos.
+     */
     private final PedidoDAO pedidoDAO;
 
-    /** DAO para operaciones de acceso a datos de envíos. */
-    private final EnvioDAO envioDAO;
+    /**
+     * Servicio de envíos.
+     */
+    private final EnvioService envioService;
 
     /**
      * Constructor del servicio.
      *
      * @param pedidoDAO DAO para manejo de pedidos
-     * @param envioDAO DAO para manejo de envíos
+     * @param envioService servicio para manejo de envíos
      */
-    public PedidoService(PedidoDAO pedidoDAO, EnvioDAO envioDAO) {
+    public PedidoService(PedidoDAO pedidoDAO, EnvioService envioService) {
         this.pedidoDAO = pedidoDAO;
-        this.envioDAO = envioDAO;
+        this.envioService = envioService;
     }
 
     /**
@@ -110,49 +115,79 @@ public class PedidoService implements GenericService<Pedido> {
     @Override
     public void saveTx(Pedido pedido) throws Exception {
         if (pedido.getClienteNombre() == null || pedido.getClienteNombre().trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre del producto no puede estar vacío.");
+            throw new IllegalArgumentException("El nombre del cliente no puede estar vacío.");
         }
         if (pedido.getTotal() < 0) {
-            throw new IllegalArgumentException("La cantidad no puede ser menor a cero.");
+            throw new IllegalArgumentException("El total no puede ser menor a cero.");
         }
 
-        TransactionManager tx = new TransactionManager();
+        /**
+         * NOTA PARA EL EQUIPO: - Actualmente usamos DatabaseConnection
+         * (DriverManager) por simplicidad - Para mejorar performance o realizar
+         * pruebas con HikariCP cambiar a DatabaseConnectionPool - Ejemplo: new
+         * TransactionManager(DatabaseConnectionPool.getConnection())
+         */
+        try (TransactionManager tx = new TransactionManager(DatabaseConnection.getConnection())) {
+            tx.startTransaction(); 
 
-        try {
-            tx.begin();
-            pedidoDAO.saveTx(pedido, tx.getConnection());
-            tx.commit();
-        } catch (Exception e) {
-            tx.rollback();
-            throw e;
+            try {
+                pedidoDAO.saveTx(pedido, tx.getConnection());
+                tx.commit();
+                System.out.println("Pedido guardado exitosamente");
+
+            } catch (SQLException e) {
+                tx.rollback();
+                throw new Exception("Error de base de datos al guardar pedido: " + e.getMessage(), e);
+            } catch (IllegalArgumentException e) {
+                tx.rollback();
+                throw new Exception("Datos inválidos del pedido: " + e.getMessage(), e);
+            } catch (Exception e) {
+                tx.rollback();
+                throw new Exception("Error inesperado al guardar pedido: " + e.getMessage(), e);
+            }
         }
+        //  El try-with-resources asegura que tx.close() se llame incluso si hay excepciones evitando fugas de conexiones
     }
 
-
     //  MÉTODOS ADICIONALES UTILIZADOS POR EL MENU HANDLER   
-
     /**
-     * Crea un pedido junto con su envío asociado, dentro de una misma transacción.
+     * Crea un pedido junto con su envío asociado, dentro de una misma
+     * transacción.
      *
      * @param pedido pedido a registrar
      * @param envio envío asociado al pedido
      * @throws Exception si ocurre un error durante el proceso
      */
     public void crearPedidoConEnvio(Pedido pedido, Envio envio) throws Exception {
-        TransactionManager tx = new TransactionManager();
+        /**
+         * NOTA PARA EL EQUIPO: - Actualmente usamos DatabaseConnection
+         * (DriverManager) por simplicidad - Para mejorar performance o realizar
+         * pruebas con HikariCP cambiar a DatabaseConnectionPool - Ejemplo: new
+         * TransactionManager(DatabaseConnectionPool.getConnection())
+         */
+        try (TransactionManager tx = new TransactionManager(DatabaseConnection.getConnection())) {
+            tx.startTransaction();
 
-        try {
-            tx.begin();
+            try {
+                envioService.crearEnvio(envio, tx.getConnection());
+                pedido.setEnvio(envio);
+                pedidoDAO.saveTx(pedido, tx.getConnection());
 
-            envioDAO.saveTx(envio, tx.getConnection());
-            pedido.setEnvio(envio);
-            pedidoDAO.saveTx(pedido, tx.getConnection());
+                tx.commit();
+                System.out.println("Pedido y envío creados exitosamente");
 
-            tx.commit();
-        } catch (Exception e) {
-            tx.rollback();
-            throw e;
+            } catch (SQLException e) {
+                tx.rollback();
+                throw new Exception("Error de base de datos al crear pedido: " + e.getMessage(), e);
+            } catch (IllegalArgumentException e) {
+                tx.rollback();
+                throw new Exception("Datos inválidos: " + e.getMessage(), e);
+            } catch (Exception e) {
+                tx.rollback();
+                throw new Exception("Error inesperado al procesar pedido: " + e.getMessage(), e);
+            }
         }
+        // El try-with-resources asegura que tx.close() se llame incluso si hay excepciones evitando fugas de conexiones
     }
 
     /**
@@ -203,7 +238,7 @@ public class PedidoService implements GenericService<Pedido> {
 
         Envio envio = pedido.getEnvio();
         envio.setEstado(nuevoEstado);
-        envioDAO.update(envio);
+        envioService.actualizarEnvio(envio);
     }
 
     /**
@@ -231,7 +266,7 @@ public class PedidoService implements GenericService<Pedido> {
      * @throws Exception si ocurre un error de acceso
      */
     public List<Envio> listarEnviosPorEmpresa(EmpresaDeEnvio empresa) throws Exception {
-        return envioDAO.findAll()
+        return envioService.listarTodosLosEnvios()
                 .stream()
                 .filter(e -> e.getEmpresa() == empresa)
                 .toList();
@@ -256,4 +291,12 @@ public class PedidoService implements GenericService<Pedido> {
     public double calcularValorTotalPedidos() throws Exception {
         return pedidoDAO.sumarTotalActivos();
     }
-}   
+    
+    public void actualizarPedido(Pedido pedido) {
+    try {
+        pedidoDAO.update(pedido);
+    } catch (SQLException e) {
+        System.out.println("Error al actualizar pedido: " + e.getMessage());
+    }
+}
+}
