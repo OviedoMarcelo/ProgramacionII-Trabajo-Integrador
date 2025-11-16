@@ -11,3 +11,6 @@ config/application*.properties
 
 # Excepto el archivo de ejemplo
 !config/database.properties.example
+
+#Excluir carpetas de build
+/TPI-Programacion-2/build/
