@@ -10,13 +10,17 @@ import java.util.List;
 
 public class EnvioDAO implements GenericDAO<Envio> {
 
+    public EnvioDAO() {
+    }
+
+    
     @Override
-    public void save(Envio envio) throws Exception {
+    public void save(Envio envio) throws SQLException {
         throw new UnsupportedOperationException("Usar saveTx con Connection para transacciones");
     }
 
     @Override
-    public Envio findById(int id) throws Exception {
+    public Envio findById(int id) throws SQLException {
         Connection connection = null;
         try {
             connection = config.DatabaseConnection.getConnection();
@@ -29,7 +33,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
     }
 
     @Override
-    public List<Envio> findAll() throws Exception {
+    public List<Envio> findAll() throws SQLException {
         Connection connection = null;
         try {
             connection = config.DatabaseConnection.getConnection();
@@ -42,7 +46,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
     }
 
     @Override
-    public void update(Envio envio) throws Exception {
+    public void update(Envio envio) throws SQLException {
         Connection connection = null;
         try {
             connection = config.DatabaseConnection.getConnection();
@@ -55,7 +59,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
     }
 
     @Override
-    public void delete(int id) throws Exception {
+    public void delete(int id) throws SQLException {
         Connection connection = null;
         try {
             connection = config.DatabaseConnection.getConnection();
@@ -68,7 +72,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
     }
 
     @Override
-    public void saveTx(Envio envio, Connection connection) throws Exception {
+    public void saveTx(Envio envio, Connection connection) throws SQLException {
         String sql = "INSERT INTO envios (tracking, empresa, tipo, costo, fecha_despacho, fecha_estimada, estado, eliminado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -86,7 +90,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
             // Obtener el ID generado
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    envio.setId(generatedKeys.getLong(1));
+                    envio.setId(generatedKeys.getInt(1));
                 }
             }
         }
@@ -169,7 +173,7 @@ public class EnvioDAO implements GenericDAO<Envio> {
     // Método auxiliar para mapear ResultSet a objeto Envio
     private Envio mapearEnvio(ResultSet resultSet) throws SQLException {
         Envio envio = new Envio();
-        envio.setId(resultSet.getLong("id"));
+        envio.setId(resultSet.getInt("id"));
         envio.setTracking(resultSet.getString("tracking"));
         envio.setEmpresa(EmpresaDeEnvio.valueOf(resultSet.getString("empresa")));
         envio.setTipo(TipoDeEnvio.valueOf(resultSet.getString("tipo")));
