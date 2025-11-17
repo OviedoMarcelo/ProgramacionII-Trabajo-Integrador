@@ -208,7 +208,7 @@ public class PedidoService implements GenericService<Pedido> {
      * @throws Exception si ocurre un error
      */
     public Pedido buscarPorNumero(String numero) throws Exception {
-        return pedidoDAO.findByNumero(numero);
+        return pedidoDAO.findByNumber(numero);
     }
 
     /**
@@ -219,18 +219,18 @@ public class PedidoService implements GenericService<Pedido> {
      * @throws Exception si ocurre un error
      */
     public List<Pedido> buscarPorCliente(String cliente) throws Exception {
-        return pedidoDAO.findByCliente(cliente);
+        return pedidoDAO.findByClient(cliente);
     }
 
     /**
      * Actualiza el estado del envío asociado a un pedido específico.
      *
-     * @param numeroPedido número del pedido
+     * @param numeroPedido número id del pedido
      * @param nuevoEstado nuevo estado del envío
      * @throws Exception si el pedido no existe o falla la actualización
      */
-    public void actualizarEstadoEnvio(String numeroPedido, EstadoDeEnvio nuevoEstado) throws Exception {
-        Pedido pedido = pedidoDAO.findByNumero(numeroPedido);
+    public void actualizarEstadoEnvio(int numeroPedido, EstadoDeEnvio nuevoEstado) throws Exception {
+        Pedido pedido = pedidoDAO.findById(numeroPedido);
 
         if (pedido == null) {
             throw new Exception("Pedido no encontrado.");
@@ -278,7 +278,7 @@ public class PedidoService implements GenericService<Pedido> {
      * @throws Exception si ocurre un error
      */
     public long contarPedidosActivos() throws Exception {
-        return pedidoDAO.contarActivos();
+        return pedidoDAO.countActives();
     }
 
     /**
@@ -288,7 +288,7 @@ public class PedidoService implements GenericService<Pedido> {
      * @throws Exception si ocurre un error
      */
     public double calcularValorTotalPedidos() throws Exception {
-        return pedidoDAO.sumarTotalActivos();
+        return pedidoDAO.totalActivesValue();
     }
     
     public void actualizarPedido(Pedido pedido) {

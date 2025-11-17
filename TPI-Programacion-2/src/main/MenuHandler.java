@@ -62,7 +62,6 @@ public class MenuHandler {
             pedido.setNumero(numero);
             pedido.setClienteNombre(cliente);
             pedido.setTotal(total);
-
             Envio envio = new Envio();
             
             // generamos uuid para tracking:
@@ -95,8 +94,8 @@ public class MenuHandler {
 
             for (Pedido pedido : pedidos) {
                 if (!pedido.isEliminado()) {
-                    System.out.printf("Pedido #%s - Cliente: %s - Total: $%.2f - Estado: %s%n",
-                            pedido.getNumero(), pedido.getClienteNombre(),
+                    System.out.printf("ID: %s - Pedido #%s - Cliente: %s - Total: $%.2f - Estado: %s%n",
+                            pedido.getId(),pedido.getNumero(), pedido.getClienteNombre(),
                             pedido.getTotal(), pedido.getEstado());
                 }
             }
@@ -108,8 +107,7 @@ public class MenuHandler {
     public void buscarPedidoPorNumero() {
         try {
             System.out.print("\nIngrese número de pedido a buscar: ");
-            String numero = scanner.nextLine().toUpperCase();
-
+            String numero = scanner.nextLine();
             Pedido pedido = pedidoService.buscarPorNumero(numero);
 
             if (pedido != null && !pedido.isEliminado()) {
@@ -148,9 +146,9 @@ public class MenuHandler {
 
     public void actualizarEstadoEnvio() {
         try {
-            System.out.print("\nIngrese número de pedido: ");
-            String numero = scanner.nextLine().toUpperCase();
-
+            System.out.print("\nIngrese el id de pedido: ");
+            int numero = scanner.nextInt();
+            scanner.nextLine(); // ← limpia el salto de línea pendiente
             System.out.println("Estados disponibles: EN_PREPARACION, EN_TRANSITO, ENTREGADO");
             System.out.print("Nuevo estado: ");
             String estado = scanner.nextLine().toUpperCase();
@@ -167,6 +165,7 @@ public class MenuHandler {
         try {
             System.out.print("\nIngrese el id del pedido a eliminar: ");
             int numero = scanner.nextInt();
+            scanner.nextLine();
 
             System.out.print("¿Está seguro? (S/N): ");
             String confirmacion = scanner.nextLine().toUpperCase();
@@ -230,7 +229,7 @@ public class MenuHandler {
         try {
         System.out.println("\n=== ACTUALIZAR PEDIDO ===");
         System.out.print("Ingrese número de pedido a actualizar: ");
-        String numero = scanner.nextLine().toUpperCase();
+        String numero = scanner.nextLine();
 
         // Buscar el pedido existente
         Pedido pedidoExistente = pedidoService.buscarPorNumero(numero);
