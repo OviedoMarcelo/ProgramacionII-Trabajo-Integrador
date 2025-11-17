@@ -207,8 +207,8 @@ public class PedidoService implements GenericService<Pedido> {
      * @return pedido encontrado o null
      * @throws Exception si ocurre un error
      */
-    public Pedido buscarPorNumero(int numero) throws Exception {
-        return pedidoDAO.findById(numero);
+    public Pedido buscarPorNumero(String numero) throws Exception {
+        return pedidoDAO.findByNumber(numero);
     }
 
     /**

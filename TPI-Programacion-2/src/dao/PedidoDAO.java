@@ -130,6 +130,29 @@ public class PedidoDAO implements GenericDAO<Pedido> {
     }
 
     /**
+     * Busca un pedido por su número identificador único.
+     *
+     * @param numero número del pedido
+     * @return pedido encontrado o null
+     * @throws SQLException si ocurre un error SQL
+     */
+    public Pedido findByNumber(String numero) throws SQLException {
+        String sql = "SELECT * FROM pedidos WHERE numero = ? AND eliminado = FALSE";
+
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, numero);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToPedido(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Cuenta cuántos pedidos están activos (no eliminados).
      *
      * @return número de pedidos activos
