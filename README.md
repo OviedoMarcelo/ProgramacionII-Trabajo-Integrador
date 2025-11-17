@@ -62,7 +62,7 @@ El sistema permite gestionar dos entidades principales con las siguientes operac
 
 | Componente | Versión Requerida |
 |------------|-------------------|
-| Java JDK | 17 o superior |
+| Java JDK | 24 o superior |
 | MySQL | 8.0 o superior |
 | Gradle | 8.12 (incluido wrapper) |
 | Sistema Operativo | Windows, Linux o macOS |
@@ -179,7 +179,18 @@ Driver: MySQL Connector/J v8.4.0
 ### Menú Principal (Pendiente)
 
 ```
-========= MENU =========
+--- MENÚ PRINCIPAL ---
+1. Crear Pedido con Envío
+2. Listar todos los Pedidos
+3. Buscar Pedido por Número
+4. Buscar Pedido por Cliente
+5. Actualizar Pedido
+6. Actualizar Estado de Envío
+7. Eliminar Pedido (lógico)
+8. Listar Envíos por Empresa
+9. Ver Estadísticas
+0. Salir
+Seleccione una opción:
 
 ```
 
@@ -218,33 +229,41 @@ Driver: MySQL Connector/J v8.4.0
 └─────────────────────────────────────┘
 ```
 
-### Componentes Principales (Corregir)
+### Componentes Principales
 
-**Config/**
-- `DatabaseConnection.java`: Gestión de conexiones JDBC con validación en inicialización estática
-- `TransactionManager.java`: Manejo de transacciones con AutoCloseable
+### Componentes Principales
 
-**Models/**
-- `Base.java`: Clase abstracta con campos id y eliminado
-- `Persona.java`: Entidad Persona (nombre, apellido, dni, domicilio)
-- `Domicilio.java`: Entidad Domicilio (calle, numero)
+**config/**
+- `DatabaseConnection.java`: Maneja la creación de conexiones JDBC.
+- `DatabaseConnectionPool.java`: Implementa un pool de conexiones para optimizar el acceso a la BD.
+- `TransactionManager.java`: Controla transacciones utilizando `AutoCloseable` para garantizar commit/rollback seguros.
+- `database.properties`: Archivo de configuración con credenciales y parámetros de la BD.
 
-**Dao/**
-- `GenericDAO<T>`: Interface genérica con operaciones CRUD
-- `PersonaDAO`: Implementación con queries LEFT JOIN para incluir domicilio
-- `DomicilioDAO`: Implementación para domicilios
+**entities/**
+- `Base.java`: Clase abstracta con campos comunes (`id`, `eliminado`).
+- `EntidadBase.java`: Capa intermedia que estandariza comportamiento en entidades.
+- `Envio.java`: Entidad envío (tracking, empresa, tipo, costo, fechas, estado).
+- `Pedido.java`: Entidad pedido (número, fecha, cliente, total, estado, FK envío).
+- `EmpresaDeEnvio.java`: Enum con empresas posibles (`ANDREANI`, `OCA`, `CORREO_ARG`).
+- `TipoDeEnvio.java`: Enum de tipo de envío (`ESTANDAR`, `EXPRESS`).
+- `EstadoDeEnvio.java`: Enum de estado para envíos.
+- `EstadoDePedido.java`: Enum de estado para pedidos.
 
-**Service/**
-- `GenericService<T>`: Interface genérica para servicios
-- `PersonaServiceImpl`: Validaciones de persona y coordinación con domicilios
-- `DomicilioServiceImpl`: Validaciones de domicilio
+**dao/**
+- `GenericDAO.java`: Interfaz genérica con operaciones CRUD básicas.
+- `EnvioDAO.java`: Acceso a datos para `Envio` (alta, baja lógica, búsquedas, filtrado).
+- `PedidoDAO.java`: Acceso a datos para `Pedido`, incluida la relación con `Envio`.
 
-**Main/**
-- `Main.java`: Punto de entrada
-- `AppMenu.java`: Orquestador del ciclo de menú
-- `MenuHandler.java`: Implementación de operaciones CRUD con captura de entrada
-- `MenuDisplay.java`: Lógica de visualización de menús
-- `TestConexion.java`: Utilidad para verificar conexión a BD
+**service/**
+- `GenericService.java`: Interfaz genérica para servicios de negocio.
+- `EnvioService.java`: Contiene validaciones de negocio para envíos (tracking único, costo válido, enums).
+- `PedidoService.java`: Validaciones para pedidos (campos obligatorios, monto positivo, existencia del envío asociado).
+
+**main/**
+- `Main.java`: Punto de entrada de la aplicación.
+- `AppMenu.java`: Controlador principal del menú interactivo.
+- `MenuHandler.java`: Implementación de las operaciones CRUD, manejo de input y flujo general.
+
 
 ## Modelo de Datos
 
