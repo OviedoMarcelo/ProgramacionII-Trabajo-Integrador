@@ -108,7 +108,7 @@ public class MenuHandler {
     public void buscarPedidoPorNumero() {
         try {
             System.out.print("\nIngrese número de pedido a buscar: ");
-            String numero = scanner.nextLine().toUpperCase();
+            int numero = scanner.nextInt();
 
             Pedido pedido = pedidoService.buscarPorNumero(numero);
 
@@ -148,8 +148,8 @@ public class MenuHandler {
 
     public void actualizarEstadoEnvio() {
         try {
-            System.out.print("\nIngrese número de pedido: ");
-            String numero = scanner.nextLine().toUpperCase();
+            System.out.print("\nIngrese el id de pedido: ");
+            int numero = scanner.nextInt();
 
             System.out.println("Estados disponibles: EN_PREPARACION, EN_TRANSITO, ENTREGADO");
             System.out.print("Nuevo estado: ");
@@ -230,7 +230,7 @@ public class MenuHandler {
         try {
         System.out.println("\n=== ACTUALIZAR PEDIDO ===");
         System.out.print("Ingrese número de pedido a actualizar: ");
-        String numero = scanner.nextLine().toUpperCase();
+        int numero = scanner.nextInt();
 
         // Buscar el pedido existente
         Pedido pedidoExistente = pedidoService.buscarPorNumero(numero);

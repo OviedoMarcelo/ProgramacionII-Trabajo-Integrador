@@ -30,7 +30,7 @@ public class EnvioService {
         validarEnvio(envio);
 
         // Verificar que el tracking sea único
-        Envio envioExistente = envioDAO.buscarPorTracking(envio.getTracking(), connection);
+        Envio envioExistente = envioDAO.findByTracking(envio.getTracking(), connection);
         if (envioExistente != null) {
             throw new IllegalArgumentException("Ya existe un envío con el tracking: " + envio.getTracking());
         }
@@ -53,7 +53,7 @@ public class EnvioService {
         Connection connection = null;
         try {
             connection = config.DatabaseConnection.getConnection();
-            return envioDAO.buscarPorTracking(tracking, connection);
+            return envioDAO.findByTracking(tracking, connection);
         } finally {
             if (connection != null) {
                 connection.close();

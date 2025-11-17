@@ -1,163 +1,193 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package dao;
 
-import entities.Envio;
+import config.DatabaseConnection;
 import entities.EmpresaDeEnvio;
-import entities.TipoDeEnvio;
+import entities.Envio;
 import entities.EstadoDeEnvio;
-import java.sql.*;
+import entities.TipoDeEnvio;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO de la entidad {@link Envio}. <br>
+ * 
+ * Se encarga de realizar las operaciones de acceso a datos sobre la tabla
+ * {@code envios}: inserción, actualización, borrado lógico y consultas.
+ * Implementa la interfaz {@code GenericDAO<Envio>}.
+ *
+ * La tabla {@code envios} utiliza borrado lógico mediante la columna
+ * {@code eliminado}, por lo que los métodos de consulta sólo devuelven
+ * registros no eliminados.
+ *
+ * @author Oviedo Marcelo
+ * @date 14 nov 2025
+ */
 public class EnvioDAO implements GenericDAO<Envio> {
 
-    public EnvioDAO() {
-    }
+    /** Sentencia SQL para insertar un nuevo envío. */
+    private static final String INSERT_SQL =
+            "INSERT INTO envios (tracking,empresa,tipo,costo,fecha_despacho,fecha_estimada,estado) "
+            + "VALUES (?, ?,?,?,?,?,?)";
 
-    
+    /** Sentencia SQL para actualizar un envío existente. */
+    private static final String UPDATE_SQL =
+            "UPDATE envios SET tracking=?,empresa=?,tipo=?,costo=?,fecha_despacho=?,fecha_estimada=?,estado=? "
+            + "WHERE id = ?";
+
+    /** Sentencia SQL para realizar borrado lógico de un envío. */
+    private static final String DELETE_SQL =
+            "UPDATE envios SET eliminado = TRUE WHERE id = ?";
+
+    /** Sentencia SQL para buscar un envío por ID (sólo no eliminados). */
+    private static final String SELECT_BY_ID_SQL =
+            "SELECT * FROM envios WHERE id = ? AND eliminado = FALSE";
+
+    /** Sentencia SQL para obtener todos los envíos no eliminados. */
+    private static final String SELECT_ALL_SQL =
+            "SELECT * FROM envios WHERE eliminado = FALSE";
+
+    /**
+     * Guarda un nuevo envío en la base de datos utilizando una conexión propia.
+     * <br>
+     * Este método crea la conexión, ejecuta el INSERT y asigna al objeto
+     * {@link Envio} el ID generado de forma automática por la base de datos.
+     *
+     * @param envio envío a persistir
+     * @throws java.sql.SQLException
+     */
     @Override
     public void save(Envio envio) throws SQLException {
-        //throw new UnsupportedOperationException("Usar saveTx con Connection para transacciones");
-            try (Connection connection = config.DatabaseConnection.getConnection();) {
-        saveTx(envio, connection);
-    }
-    }
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
-    @Override
-    public Envio findById(int id) throws SQLException {
-        Connection connection = null;
-        try {
-            connection = config.DatabaseConnection.getConnection();
-            return findById(id, connection);
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
+            setEnvioValues(stmt, envio);
+            stmt.executeUpdate();
+            setGeneratedId(stmt, envio);
         }
     }
 
+    /**
+     * Guarda un nuevo envío en la base de datos utilizando una conexión
+     * existente, típica de un contexto transaccional. <br>
+     * Este método NO crea la conexión, sino que reutiliza la recibida por
+     * parámetro.
+     *
+     * @param envio envío a persistir
+     * @param conn conexión a reutilizar dentro de una transacción
+     * @throws java.sql.SQLException
+     */
     @Override
-    public List<Envio> findAll() throws SQLException {
-        Connection connection = null;
-        try {
-            connection = config.DatabaseConnection.getConnection();
-            return findAll(connection);
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
+    public void saveTx(Envio envio, Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            setEnvioValues(stmt, envio);
+            stmt.executeUpdate();
+            setGeneratedId(stmt, envio);
         }
     }
 
+    /**
+     * Actualiza los datos de un envío existente en la base de datos.
+     *
+     * @param envio envío con los datos actualizados; se utiliza su ID para
+     *              identificar el registro a modificar
+     * @throws java.sql.SQLException
+     */
     @Override
     public void update(Envio envio) throws SQLException {
-        Connection connection = null;
-        try {
-            connection = config.DatabaseConnection.getConnection();
-            update(envio, connection);
-        } finally {
-            if (connection != null) {
-                connection.close();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(UPDATE_SQL)) {
+
+            stmt.setString(1, envio.getTracking());
+            stmt.setString(2, envio.getEmpresa().name());
+            stmt.setString(3, envio.getTipo().name());
+            stmt.setDouble(4, envio.getCosto());
+            stmt.setDate(5, java.sql.Date.valueOf(envio.getFechaDespacho()));
+            stmt.setDate(6, java.sql.Date.valueOf(envio.getFechaEstimada()));
+            stmt.setString(7, envio.getEstado().name());
+            stmt.setLong(8, envio.getId());
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("No se pudo actualizar el envío con ID: " + envio.getId());
             }
         }
     }
 
+    /**
+     * Realiza un borrado lógico de un envío, marcándolo como eliminado.
+     *
+     * @param id identificador del envío a eliminar
+     * @throws java.sql.SQLException si no se encuentra el envío o si ocurre un error SQL
+     */
     @Override
     public void delete(int id) throws SQLException {
-        Connection connection = null;
-        try {
-            connection = config.DatabaseConnection.getConnection();
-            delete(id, connection);
-        } finally {
-            if (connection != null) {
-                connection.close();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
+
+            stmt.setInt(1, id);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("No se encontró envío con ID: " + id);
             }
         }
     }
 
+    /**
+     * Busca un envío por su identificador, siempre que no esté marcado como
+     * eliminado.
+     *
+     * @param id identificador del envío
+     * @return el envío encontrado, o {@code null} si no existe o está eliminado
+     * @throws java.sql.SQLException si ocurre un error de conexión o de ejecución de la consulta
+     */
     @Override
-    public void saveTx(Envio envio, Connection connection) throws SQLException {
-        String sql = "INSERT INTO envios (tracking, empresa, tipo, costo, fecha_despacho, fecha_estimada, estado, eliminado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, envio.getTracking());
-            statement.setString(2, envio.getEmpresa().name());
-            statement.setString(3, envio.getTipo().name());
-            statement.setDouble(4, envio.getCosto());
-            statement.setDate(5, envio.getFechaDespacho() != null ? Date.valueOf(envio.getFechaDespacho()) : null);
-            statement.setDate(6, envio.getFechaEstimada() != null ? Date.valueOf(envio.getFechaEstimada()) : null);
-            statement.setString(7, envio.getEstado().name());
-            statement.setBoolean(8, false); // eliminado = false por defecto
-            
-            statement.executeUpdate();
-            
-            // Obtener el ID generado
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    envio.setId(generatedKeys.getLong(1));
+    public Envio findById(int id) throws SQLException {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID_SQL)) {
+
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToEnvio(rs);
                 }
             }
         }
+        return null;
     }
 
-    // Métodos adicionales que trabajan con Connection
-    public Envio findById(int id, Connection connection) throws SQLException {
-        String sql = "SELECT * FROM envios WHERE id = ? AND eliminado = false";
-        Envio envio = null;
-        
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, id);
-            
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    envio = mapearEnvio(resultSet);
-                }
-            }
-        }
-        return envio;
-    }
-
-    public List<Envio> findAll(Connection connection) throws SQLException {
-        String sql = "SELECT * FROM envios WHERE eliminado = false";
+    /**
+     * Obtiene todos los envíos que no están marcados como eliminados.
+     *
+     * @return lista de envíos activos
+     * @throws java.sql.SQLException si ocurre un error al acceder a la base de datos
+     */
+    @Override
+    public List<Envio> findAll() throws SQLException {
         List<Envio> envios = new ArrayList<>();
-        
-        try (PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-            
-            while (resultSet.next()) {
-                envios.add(mapearEnvio(resultSet));
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SQL);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                envios.add(mapResultSetToEnvio(rs));
             }
         }
+
         return envios;
     }
-
-    public void update(Envio envio, Connection connection) throws SQLException {
-        String sql = "UPDATE envios SET tracking = ?, empresa = ?, tipo = ?, costo = ?, fecha_despacho = ?, fecha_estimada = ?, estado = ? WHERE id = ?";
-        
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, envio.getTracking());
-            statement.setString(2, envio.getEmpresa().name());
-            statement.setString(3, envio.getTipo().name());
-            statement.setDouble(4, envio.getCosto());
-            statement.setDate(5, envio.getFechaDespacho() != null ? Date.valueOf(envio.getFechaDespacho()) : null);
-            statement.setDate(6, envio.getFechaEstimada() != null ? Date.valueOf(envio.getFechaEstimada()) : null);
-            statement.setString(7, envio.getEstado().name());
-            statement.setLong(8, envio.getId());
-            
-            statement.executeUpdate();
-        }
-    }
-
-    public void delete(int id, Connection connection) throws SQLException {
-        String sql = "UPDATE envios SET eliminado = true WHERE id = ?";
-        
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, id);
-            statement.executeUpdate();
-        }
-    }
-
-    // Método adicional: buscar por tracking
-    public Envio buscarPorTracking(String tracking, Connection connection) throws SQLException {
+    
+        public Envio findByTracking(String tracking, Connection connection) throws SQLException {
         String sql = "SELECT * FROM envios WHERE tracking = ? AND eliminado = false";
         Envio envio = null;
         
@@ -166,35 +196,83 @@ public class EnvioDAO implements GenericDAO<Envio> {
             
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    envio = mapearEnvio(resultSet);
+                    envio = mapResultSetToEnvio(resultSet);
                 }
             }
         }
         return envio;
     }
+    
+    
 
-    // Método auxiliar para mapear ResultSet a objeto Envio
-    private Envio mapearEnvio(ResultSet resultSet) throws SQLException {
-        Envio envio = new Envio();
-        envio.setId(resultSet.getLong("id"));
-        envio.setTracking(resultSet.getString("tracking"));
-        envio.setEmpresa(EmpresaDeEnvio.valueOf(resultSet.getString("empresa")));
-        envio.setTipo(TipoDeEnvio.valueOf(resultSet.getString("tipo")));
-        envio.setCosto(resultSet.getDouble("costo"));
-        
-        Date fechaDespacho = resultSet.getDate("fecha_despacho");
-        if (fechaDespacho != null) {
-            envio.setFechaDespacho(fechaDespacho.toLocalDate());
-        }
-        
-        Date fechaEstimada = resultSet.getDate("fecha_estimada");
-        if (fechaEstimada != null) {
-            envio.setFechaEstimada(fechaEstimada.toLocalDate());
-        }
-        
-        envio.setEstado(EstadoDeEnvio.valueOf(resultSet.getString("estado")));
-        
-        return envio;
+    // -------------------------------------------------------------------------
+    // Métodos auxiliares (helpers)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Asigna los valores del objeto {@link Envio} a los parámetros del
+     * {@link PreparedStatement} respetando el orden definido en {@link #INSERT_SQL}.
+     *
+     * Orden de los parámetros: tracking, empresa, tipo, costo,
+     * fechaDespacho, fechaEstimada, estado.
+     *
+     * @param stmt sentencia preparada sobre la que se setearán los parámetros
+     * @param envio envío cuyos datos se utilizarán
+     * @throws SQLException si ocurre un error al setear algún parámetro
+     */
+    private void setEnvioValues(PreparedStatement stmt, Envio envio) throws SQLException {
+        stmt.setString(1, envio.getTracking());
+        stmt.setString(2, envio.getEmpresa().name());
+        stmt.setString(3, envio.getTipo().name());
+        stmt.setDouble(4, envio.getCosto());
+        stmt.setDate(5, java.sql.Date.valueOf(envio.getFechaDespacho()));
+        stmt.setDate(6, java.sql.Date.valueOf(envio.getFechaEstimada()));
+        stmt.setString(7, envio.getEstado().name());
     }
-}
 
+    /**
+     * Obtiene el ID generado automáticamente por la base de datos luego de un
+     * INSERT y lo asigna al objeto {@link Envio}. <br>
+     * Requiere que el {@link PreparedStatement} haya sido creado con la
+     * opción {@link Statement#RETURN_GENERATED_KEYS}.
+     *
+     * @param stmt sentencia preparada que ejecutó el INSERT
+     * @param envio envío al que se le asignará el ID generado
+     * @throws SQLException si no se obtiene ningún ID o si ocurre un error al
+     *                      acceder al conjunto de claves generadas
+     */
+    private void setGeneratedId(PreparedStatement stmt, Envio envio) throws SQLException {
+        try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                envio.setId(generatedKeys.getLong(1));
+            } else {
+                throw new SQLException("La inserción del envío falló, no se obtuvo ID generado.");
+            }
+        }
+    }
+
+    /**
+     * Mapea la fila actual de un {@link ResultSet} a una instancia de
+     * {@link Envio}. <br>
+     * Convierte las columnas de la tabla {@code envios} a los tipos de la
+     * entidad, incluyendo el mapeo de {@code ENUM} a {@code enum} de Java y
+     * de {@code DATE} a {@link java.time.LocalDate}.
+     *
+     * @param rs resultado de la consulta posicionado en una fila válida
+     * @return una instancia de {@link Envio} construida a partir de la fila actual
+     * @throws SQLException si ocurre un error al leer alguna de las columnas
+     */
+    private Envio mapResultSetToEnvio(ResultSet rs) throws SQLException {
+        return new Envio(
+                rs.getLong("id"),
+                rs.getString("tracking"),
+                EmpresaDeEnvio.valueOf(rs.getString("empresa")),
+                TipoDeEnvio.valueOf(rs.getString("tipo")),
+                rs.getDouble("costo"),
+                rs.getDate("fechaDespacho").toLocalDate(),
+                rs.getDate("fechaEstimada").toLocalDate(),
+                EstadoDeEnvio.valueOf(rs.getString("estado"))
+        );
+    }
+
+}
