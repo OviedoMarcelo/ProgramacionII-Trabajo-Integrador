@@ -249,32 +249,37 @@ Driver: MySQL Connector/J v8.4.0
 ## Modelo de Datos
 
 ```
-┌────────────────────┐          ┌──────────────────┐
-│     personas       │          │   domicilios     │
-├────────────────────┤          ├──────────────────┤
-│ id (PK)            │          │ id (PK)          │
-│ nombre             │          │ calle            │
-│ apellido           │          │ numero           │
-│ dni (UNIQUE)       │          │ eliminado        │
-│ domicilio_id (FK)  │──────┐   └──────────────────┘
-│ eliminado          │      │
-└────────────────────┘      │
-                            │
-                            └──▶ Relación 0..1
+┌────────────────────────┐          ┌──────────────────────────┐
+│        pedidos         │          │          envios          │
+├────────────────────────┤          ├──────────────────────────┤
+│ id (PK)                │          │ id (PK)                  │
+│ numero                 │          │ tracking (UNIQUE)        │
+│ fecha                  │          │ empresa (ENUM)           │
+│ clienteNombre          │          │ tipo (ENUM)              │
+│ total                  │          │ costo                    │
+│ estado (ENUM)          │          │ fecha_despacho           │
+│ envio (FK) ────────────┼────────▶ │ fecha_estimada           │
+│ eliminado              │          │ estado (ENUM)            │
+└────────────────────────┘          │ eliminado                │
+                                   └──────────────────────────┘
+
+                             Relación: Muchos (pedidos) → Uno (envio)
 ```
 
-**Reglas:**
-- Una persona puede tener 0 o 1 domicilio
-- DNI es único (constraint en base de datos y validación en aplicación)
-- Eliminación lógica: campo `eliminado = TRUE`
-- Foreign key `domicilio_id` puede ser NULL
+**🔒 Reglas del modelo:**
+
+-Cada pedido debe tener exactamente un envío asociado (el campo envio es NOT NULL y es FK → envios.id).
+-Un envío puede estar asociado a uno o varios pedidos.
+-El campo tracking en envios es único (constraint a nivel de base de datos y validación en la aplicación).
+-Ambos modelos implementan eliminación lógica mediante el campo eliminado = TRUE.
+-Los campos con montos (total, costo) tienen validación de valores positivos mediante CHECK.
+-Los estados (estado) y clasificaciones (empresa, tipo) están controlados mediante ENUMs para garantizar consistencia.
 
 ## Patrones y Buenas Prácticas
 
 ### Seguridad
 - **100% PreparedStatements**: Prevención de SQL injection
 - **Validación multi-capa**: Service layer valida antes de persistir
-- **DNI único**: Constraint en BD + validación en `PersonaServiceImpl.validateDniUnique()`
 
 ### Gestión de Recursos
 - **Try-with-resources**: Todas las conexiones, statements y resultsets
@@ -284,7 +289,7 @@ Driver: MySQL Connector/J v8.4.0
 ### Validaciones
 - **Input trimming**: Todos los inputs usan `.trim()` inmediatamente
 - **Campos obligatorios**: Validación de null y empty en service layer
-- **IDs positivos**: Validación `id > 0` en todas las operaciones
+- **IDs único**: Validación `id AUTOINCREMENTAL` en cada alta generado por la base y actualizado en el objeto.
 - **Verificación de rowsAffected**: En UPDATE y DELETE
 
 ### Soft Delete
@@ -292,15 +297,26 @@ Driver: MySQL Connector/J v8.4.0
 - SELECT filtra: `WHERE eliminado = FALSE`
 - No hay eliminación física de datos
 
-## Reglas de Negocio Principales
+## 🔑 Reglas de Negocio Principales
 
-1. **DNI único**: No se permiten personas con DNI duplicado
-2. **Campos obligatorios**: Nombre, apellido y DNI son requeridos para persona
-3. **Validación antes de persistir**: Service layer valida antes de llamar a DAO
-4. **Eliminación segura de domicilio**: Usar opción 10 (por persona) en lugar de opción 8 (por ID)
-5. **Preservación de valores**: En actualización, campos vacíos mantienen valor original
-6. **Búsqueda flexible**: LIKE con % permite coincidencias parciales
-7. **Transacciones**: Operaciones complejas soportan rollback
+1. **Tracking único** Cada envío debe tener un `tracking` irrepetible.  
+   *Validado por constraint `UNIQUE` y generado por UUID.*
+
+2. **Campos obligatorios en pedidos** Los campos `numero`, `fecha`, `clienteNombre`, `total`, `estado` y `envio` son requeridos para registrar un pedido.
+
+3. **Validación previa a persistir** Toda operación pasa por la capa de servicio, que valida:  
+   - Presencia de campos obligatorios  
+   - ENUMs válidos  
+   - Valores positivos (`total`, `costo`)  
+   - Existencia del envío referenciado
+
+4. **Relación controlada Pedido → Envío**  No se permite persistir un pedido con un `envio` inexistente.  La FK debe apuntar a un envío válido y no eliminado lógicamente.
+
+5. **Preservación de valores en actualizaciones**  En las actualizaciones parciales, los campos no enviados mantienen su valor original.
+
+6. **Búsqueda flexible**  Las consultas permiten coincidencias parciales mediante `LIKE '%valor%'`.
+
+7. **Transacciones en operaciones complejas**  Procedimientos que afectan múltiples entidades se ejecutan dentro de transacciones, permitiendo **rollback** en caso de error.
 
 ## Solución de Problemas
 
@@ -344,62 +360,57 @@ net start MySQL80
 2. **Interfaz solo consola**: No hay GUI gráfica
 3. **Un domicilio por persona**: No soporta múltiples domicilios
 4. **Sin paginación**: Listar todos puede ser lento con muchos registros
-5. **Opción 8 peligrosa**: Eliminar domicilio por ID puede dejar referencias huérfanas (usar opción 10)
-6. **Sin pool de conexiones**: Nueva conexión por operación (aceptable para app de consola)
-7. **Sin transacciones en MenuHandler**: Actualizar persona + domicilio puede fallar parcialmente
-
-## Documentación Adicional
-
-- **CLAUDE.md**: Documentación técnica detallada para desarrollo
-  - Comandos de build y ejecución
-  - Arquitectura profunda
-  - Patrones de código críticos
-  - Troubleshooting avanzado
-  - Verificación de calidad (score 9.7/10)
-
-- **HISTORIAS_DE_USUARIO.md**: Especificaciones funcionales completas
-  - Historias de usuario detalladas
-  - Reglas de negocio numeradas
-  - Criterios de aceptación en formato Gherkin
-  - Diagramas de flujo
+5. **Sin pool de conexiones**: Nueva conexión por operación (aceptable para app de consola)
+6. **Sin transacciones en MenuHandler**: Actualizar persona + domicilio puede fallar parcialmente
 
 ## Tecnologías Utilizadas
 
-- **Lenguaje**: Java 17
+- **Lenguaje**: Java 24
 - **Build Tool**: Gradle 8.12
 - **Base de Datos**: MySQL 8.x
 - **JDBC Driver**: mysql-connector-j 8.4.0
-- **Testing**: JUnit 5 (configurado, sin tests implementados)
 
 ## Estructura de Directorios
 
 ```
-TPI-Prog2-fusion-final/
-├── src/main/java/
-│   ├── Config/          # Configuración de BD y transacciones
-│   ├── Dao/             # Capa de acceso a datos
-│   ├── Main/            # UI y punto de entrada
-│   ├── Models/          # Entidades de dominio
-│   └── Service/         # Lógica de negocio
-├── build.gradle         # Configuración de Gradle
-├── gradlew              # Gradle wrapper (Unix)
-├── gradlew.bat          # Gradle wrapper (Windows)
-├── README.md            # Este archivo
-├── CLAUDE.md            # Documentación técnica
-└── HISTORIAS_DE_USUARIO.md  # Especificaciones funcionales
+TrabajoPractico2/
+├── src/
+│   └── main/
+│       └── java/
+│           ├── config/                 # Conexión a BD, pool, transacciones
+│           │   ├── DatabaseConnection.java
+│           │   ├── DatabaseConnectionPool.java
+│           │   ├── TransactionManager.java
+│           │   └── database.properties
+│           │
+│           ├── dao/                    # Capa de acceso a datos (DAO)
+│           │   ├── GenericDAO.java
+│           │   ├── EnvioDAO.java
+│           │   └── PedidoDAO.java
+│           │
+│           ├── entities/               # Modelos / Entidades del dominio
+│           │   ├── Base.java
+│           │   ├── EntidadBase.java
+│           │   ├── Envio.java
+│           │   ├── Pedido.java
+│           │   ├── EmpresaDeEnvio.java
+│           │   ├── TipoDeEnvio.java
+│           │   ├── EstadoDeEnvio.java
+│           │   └── EstadoDePedido.java
+│           │
+│           ├── main/                   # Menu, interacción y punto de entrada
+│           │   ├── AppMenu.java
+│           │   ├── MenuHandler.java
+│           │   └── Main.java
+│           │
+│           └── service/                # Lógica de negocio (Services)
+│               ├── GenericService.java
+│               ├── EnvioService.java
+│               └── PedidoService.java
+│
+├── README.md                           # Documentación principal
 ```
 
-## Convenciones de Código (Revisar)
-
-- **Idioma**: Español (nombres de clases, métodos, variables)
-- **Nomenclatura**:
-  - Clases: PascalCase (Ej: `PersonaServiceImpl`)
-  - Métodos: camelCase (Ej: `buscarPorDni`)
-  - Constantes SQL: UPPER_SNAKE_CASE (Ej: `SELECT_BY_ID_SQL`)
-- **Indentación**: 4 espacios
-- **Recursos**: Siempre usar try-with-resources
-- **SQL**: Constantes privadas static final
-- **Excepciones**: Capturar y manejar con mensajes al usuario
 
 ## Evaluación y Criterios de Calidad
 
@@ -444,34 +455,6 @@ Este proyecto demuestra competencia en los siguientes criterios académicos:
 - Interfaz de usuario clara y funcional
 - Manejo robusto de errores
 
-### Puntos Destacables del Proyecto (Revisar)
-
-1. **Score de Calidad Verificado**: 9.7/10 mediante análisis exhaustivo de:
-   - Arquitectura y flujo de datos
-   - Manejo de excepciones
-   - Integridad referencial
-   - Validaciones multi-nivel
-   - Gestión de recursos
-   - Consistencia de queries SQL
-
-2. **Documentación Profesional**:
-   - README completo con ejemplos y troubleshooting
-   - CLAUDE.md con arquitectura técnica detallada
-   - HISTORIAS_DE_USUARIO.md con 11 historias y 51 reglas de negocio
-   - Javadoc completo en todos los archivos fuente
-
-3. **Implementaciones Avanzadas**:
-   - Eliminación segura de domicilios (previene FKs huérfanas)
-   - Validación de DNI único en dos niveles (DB + aplicación)
-   - Coordinación transaccional entre servicios
-   - Búsqueda flexible con LIKE pattern matching
-
-4. **Buenas Prácticas Aplicadas**:
-   - Dependency Injection manual
-   - Separación de concerns (AppMenu, MenuHandler, MenuDisplay)
-   - Factory pattern para conexiones
-   - Input sanitization con trim() consistente
-   - Fail-fast validation
 
 ### Conceptos de Programación 2 Demostrados (Revisar)
 
@@ -505,8 +488,4 @@ Este proyecto representa la integración de todos los conceptos vistos durante e
 
 ---
 
-**Versión**: 1.0
-**Java**: 17+
-**MySQL**: 8.x
-**Gradle**: 8.12
 **Proyecto Educativo** - Trabajo Práctico Integrador de Programación 2
