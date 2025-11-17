@@ -2,6 +2,22 @@
 
 ## Trabajo Práctico Integrador - Programación 2
 
+## 👥 Integrantes del Equipo
+
+| Usuario GitHub      | Nombre Completo               |
+|---------------------|-------------------------------|
+| @OviedoMarcelo      | Marcelo Oviedo                |
+| @efedefede          | Federico Panella              |
+| @Gemmanuel96        | Gonzalo Emanuel Nuñez         |
+| @FPaolazzi          | Florencia Paolazzi            |
+
+---
+
+## 🎥 Video de Presentación del Proyecto
+
+> 🔗 **Enlace **  
+> `https://youtu.be/xxxxxxxxxxx`
+
 ### Descripción del Proyecto
 
 Este Trabajo Práctico Integrador tiene como objetivo demostrar la aplicación práctica de los conceptos fundamentales de Programación Orientada a Objetos y Persistencia de Datos aprendidos durante el cursado de Programación 2. El proyecto consiste en desarrollar un sistema completo de gestión de personas y domicilios que permita realizar operaciones CRUD (Crear, Leer, Actualizar, Eliminar) sobre estas entidades, implementando una arquitectura robusta y profesional.
