@@ -71,8 +71,6 @@ El desarrollo de este sistema permite aplicar y consolidar los siguientes concep
 
 El sistema permite gestionar dos entidades principales con las siguientes operaciones:
 
-## Características Principales (Pendiente)
-
 
 ## Requisitos del Sistema
 
@@ -209,10 +207,6 @@ Driver: MySQL Connector/J v8.4.0
 Seleccione una opción:
 
 ```
-
-### Operaciones Disponibles (Pendiente)
-
-
 
 ## Arquitectura
 
@@ -491,7 +485,7 @@ Este proyecto demuestra competencia en los siguientes criterios académicos:
 - Manejo robusto de errores
 
 
-### Conceptos de Programación 2 Demostrados (Revisar)
+### Conceptos de Programación 2 Demostrados
 
 | Concepto | Implementación en el Proyecto |
 |----------|-------------------------------|
